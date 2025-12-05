@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DaCapo Chat – SLO Curriculumassistent</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">📚</span>
+                    DaCapo Chat
+                </h1>
+                <p class="subtitle">SLO Curriculumassistent voor leraren</p>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <!-- Welcome Message -->
+            <div class="welcome-message" id="welcomeMessage">
+                <div class="welcome-icon">👋</div>
+                <h2>Welkom bij DaCapo Chat!</h2>
+                <p>Ik help je graag bij het vinden van SLO-curriculumdata. Stel me een vraag over kerndoelen, domeinen, of andere curriculumonderdelen.</p>
+                <div class="example-questions">
+                    <p class="example-label">Voorbeeldvragen:</p>
+                    <button class="example-btn" onclick="sendExample('Ik zoek kerndoelen voor rekenen in het primair onderwijs')">
+                        Kerndoelen voor rekenen PO
+                    </button>
+                    <button class="example-btn" onclick="sendExample('Wat zijn de domeinen voor Nederlands in het voortgezet onderwijs?')">
+                        Domeinen voor Nederlands VO
+                    </button>
+                    <button class="example-btn" onclick="sendExample('Geef me informatie over examenprogramma Engels')">
+                        Examenprogramma Engels
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="messages" id="messagesContainer">
+                <!-- Messages will be dynamically added here -->
+            </div>
+
+            <!-- Export Button (hidden by default) -->
+            <div class="export-container" id="exportContainer" style="display: none;">
+                <button class="export-btn" id="exportBtn" onclick="exportToExcel()">
+                    <span class="export-icon">📊</span>
+                    Exporteer naar Excel
+                </button>
+            </div>
+        </main>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Stel een vraag over SLO-curriculumdata..."
+                    rows="1"
+                ></textarea>
+                <button id="sendBtn" class="send-btn" onclick="sendMessage()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <p class="input-hint">Druk op Enter om te verzenden, Shift+Enter voor een nieuwe regel</p>
+        </div>
+    </div>
+
+    <!-- Loading Indicator Template -->
+    <template id="loadingTemplate">
+        <div class="loading-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </template>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
