@@ -16,7 +16,8 @@ cp .env.example .env
 ```
 
 4. Verkrijg API keys:
-   - **OpenRouter API Key**: Registreer op [openrouter.ai](https://openrouter.ai/)
+   - **OpenAI API Key**: Registreer op [platform.openai.com](https://platform.openai.com/)
+   - **Of gebruik OpenRouter**: Registreer op [openrouter.ai](https://openrouter.ai/) voor toegang tot meerdere LLM's
    - **SLO API Key**: Registreer op [opendata.slo.nl](https://opendata.slo.nl/curriculum/api/)
 
 5. Start de server:
@@ -54,5 +55,5 @@ SLO_chat/
 
 - **Backend**: Node.js + Express
 - **Frontend**: Vanilla HTML/CSS/JavaScript
-- **LLM**: OpenRouter API
+- **LLM**: OpenAI SDK (compatible with OpenAI, OpenRouter, etc.)
 - **Data**: SLO Open Data API

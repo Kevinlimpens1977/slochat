@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 const path = require('path');
 
 const app = express();
@@ -35,7 +35,7 @@ const SYSTEM_PROMPT = `Je bent DaCapo Chat, een vriendelijke en behulpzame assis
 - Presenteer resultaten met kopjes en organisatie
 - Markeer belangrijke informatie (bijv. kerndoel nummers, domeinnamen)`;
 
-// API Route: /api/llm - Google Gemini integration
+// API Route: /api/llm - OpenAI SDK integration
 app.post('/api/llm', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -44,34 +44,21 @@ app.post('/api/llm', async (req, res) => {
       return res.status(400).json({ error: 'Messages array is required' });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'Gemini API key not configured' });
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
 
-    // Initialize Google Gemini AI
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-pro',
-      systemInstruction: SYSTEM_PROMPT
+    // Initialize OpenAI client
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
     });
 
-    // Build conversation history for Gemini
-    const history = [];
-    for (let i = 0; i < messages.length - 1; i++) {
-      const msg = messages[i];
-      if (msg.role !== 'system') {
-        history.push({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }]
-        });
-      }
-    }
-
-    // Start chat with history
-    const chat = model.startChat({ history });
-
-    // Get last user message
-    const lastMessage = messages[messages.length - 1];
+    // Add system prompt to messages
+    const messagesWithSystem = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...messages
+    ];
 
     // Set headers for Server-Sent Events
     res.setHeader('Content-Type', 'text/event-stream');
@@ -79,16 +66,20 @@ app.post('/api/llm', async (req, res) => {
     res.setHeader('Connection', 'keep-alive');
 
     try {
-      // Stream the response
-      const result = await chat.sendMessageStream(lastMessage.content);
+      // Stream the response using OpenAI SDK
+      const stream = await openai.chat.completions.create({
+        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        messages: messagesWithSystem,
+        stream: true,
+      });
 
-      for await (const chunk of result.stream) {
-        const text = chunk.text();
-        if (text) {
-          // Format response to match OpenAI SSE format
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          // Format response to match expected SSE format
           const sseData = {
             choices: [{
-              delta: { content: text },
+              delta: { content },
               index: 0
             }]
           };
@@ -100,9 +91,9 @@ app.post('/api/llm', async (req, res) => {
       res.end();
 
     } catch (streamError) {
-      console.error('Gemini stream error:', streamError);
+      console.error('OpenAI stream error:', streamError);
       if (!res.headersSent) {
-        res.status(500).json({ error: 'Gemini API error', details: streamError.message });
+        res.status(500).json({ error: 'OpenAI API error', details: streamError.message });
       } else {
         res.end();
       }
@@ -182,12 +173,12 @@ app.get('/', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 DaCapo SLO Chat server running on http://localhost:3000`);
-  console.log(`🤖 Using Google Gemini 2.0 Flash for chat`);
+  console.log(`🚀 DaCapo SLO Chat server running on http://localhost:${PORT}`);
+  console.log(`🤖 Using OpenAI SDK for chat`);
   console.log(`📚 Ready to help teachers find SLO curriculum data!`);
 
-  if (!process.env.GEMINI_API_KEY) {
-    console.warn('⚠️  WARNING: GEMINI_API_KEY not set in .env file');
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('⚠️  WARNING: OPENAI_API_KEY not set in .env file');
   }
   if (!process.env.SLO_API_KEY) {
     console.warn('⚠️  WARNING: SLO_API_KEY not set in .env file');
